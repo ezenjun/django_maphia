@@ -1,0 +1,12 @@
+<h1>{{ question.question_text }}</h1>
+
+<!--pluralize는 vote가 단수인 경우에는 단수처리, 복수인 경우에는 복수처리를 해주는 것-->
+<ul>
+{% for choice in question.choice_set.all %}
+    <li>{{ choice.choice_text }} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
+{% endfor %}
+    <!--<li>finished</li>-->
+</ul>
+
+<!--a태그를 누르게 되면 상세페이지로 넘어가게 해라-->
+<a href="{% url 'polls:detail' question.id %}">원래화면으로 넘어가기</a>

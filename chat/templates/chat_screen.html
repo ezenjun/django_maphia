@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+</head>
+<body>
+<div style="height:500px;width:100%;overflow-y:scroll" id="div_data">
+
+</div>
+<div>
+    <input type="text" name="message" id="message" placeholder="Message" style="padding:10px;width:100%">
+    <input type="button" value="Send Message" id="send_message" style="background:dodgerblue;color:#fff;padding:10px;border:0px;width:100%">
+    <script>
+        var roomName='{{ room_name }}';
+        var personname='{{ person_name }}';
+
+        var chatSocket=new WebSocket('ws://'+window.location.host+'/ws/chat/'+roomName+'/'+personname+'/');
+        var day_or_night=-1;
+        var time = 10000;
+        var jobs = ["maphia1", "maphia2", "citizen1", "citizen2", "police_officer", "doctor"]
+        jobs.sort(function(){
+            return Math.random() - Math.random();
+        })
+
+        job();
+        day_or_night+=1;
+        night();
+        day_or_night+=1;
+        setTimeout(function timedelay(){
+            if(day_or_night==0){night();day_or_night=1;time = 10000; setTimeout(timedelay, time);}    //night -> day
+            else if(day_or_night==1){day();day_or_night=2; time = 10000; setTimeout(timedelay, time);}  //day -> polls
+            else{
+                window.open("http://127.0.0.1:8000/polls/2");
+                day_or_night =0;
+                time = 3000;
+                setTimeout(timedelay, time);
+            }
+            },time)
+
+        function job(){
+            window.alert("당신의 직업은" + jobs[day_or_night+6]+"입니다")
+        }
+
+
+
+        function night() { //밤
+            var div = document.querySelector("#div_data");
+            div.innerHTML += '<br><div style="clear:both;' +
+                        'text-align: center;text-decoration-color: #dddddd;background-color: palevioletred; border-radius: 15px; padding: 10px; margin:10px">' +'밤이 되었습니다.'+ '<br>' + '마피아는 죽일 사람을 고르세요'+ '</div>\n';
+
+            chatSocket.onmessage = function (e) {
+                var data = JSON.parse(e.data)
+                var message = data['message']
+
+                var objDiv = document.getElementById("div_data");
+
+                if (personname == data['name']) {
+                    div.innerHTML += '<br><div style="clear:both;' +
+                        'float:right; background-color: papayawhip; border-radius: 15px; padding: 10px; margin:10px">' +message + '</div>\n';
+                } else {
+                    div.innerHTML += '<br><div style="clear:both;' +
+                        'float:left; background-color: skyblue; border-radius: 15px; padding: 10px; margin:10px">' + message + '</div>\n';
+                }
+
+                objDiv.scrollTop = objDiv.scrollHeight;
+                console.log(e)
+            }
+            chatSocket.onclose = function (e) {
+                var data = JSON.parse(e.data)
+                var message = data['message']
+                var div = document.querySelector("#div_data");
+                div.innerHTML += '<br>' + message;
+                console.log(e)
+            }
+
+            document.querySelector('#message').focus();
+            document.querySelector('#message').onkeyup = function (e) {
+                if (e.keyCode == 13) {  // enter, return
+                    document.querySelector('#send_message').click();
+                }
+
+            };
+            document.querySelector("#send_message").onclick = function (e) {
+                var message = document.querySelector("#message").value;
+                chatSocket.send(JSON.stringify({'message': message, 'name': personname}))
+                document.querySelector("#message").value = ''
+            }
+        }
+
+        function day() {//낮
+            var div = document.querySelector("#div_data");
+            div.innerHTML += '<br><div style="clear:both;' +
+                        'text-align: center; background-color: palevioletred; border-radius: 15px; padding: 10px; margin:10px">' +'낮이 되었습니다.'+ '<br>' + '의논 하세요.'+ '</div>\n';
+            chatSocket.onmessage = function (e) {
+                var data = JSON.parse(e.data)
+                var message = data['message']
+
+                var objDiv = document.getElementById("div_data");
+
+                if (personname == data['name']) {
+                    div.innerHTML += '<br><div style="clear:both;' +
+                        'float:right; background-color: papayawhip; border-radius: 15px; padding: 10px; margin:10px">' +message + '</div>\n';
+                } else {
+                    div.innerHTML += '<br><div style="clear:both;' +
+                        'float:left; background-color: skyblue; border-radius: 15px; padding: 10px; margin:10px">' + message + '</div>\n';
+                }
+
+                objDiv.scrollTop = objDiv.scrollHeight;
+                console.log(e)
+            }
+            chatSocket.onclose = function (e) {
+                var data = JSON.parse(e.data)
+                var message = data['message']
+                var div = document.querySelector("#div_data");
+                div.innerHTML += '<br>' + message;
+                console.log(e)
+            }
+
+            document.querySelector('#message').focus();
+            document.querySelector('#message').onkeyup = function (e) {
+                if (e.keyCode === 13) {  // enter, return
+                    document.querySelector('#send_message').click();
+                }
+
+            };
+            document.querySelector("#send_message").onclick = function (e) {
+                var message = document.querySelector("#message").value;
+                chatSocket.send(JSON.stringify({'message': message, 'name': personname}))
+                document.querySelector("#message").value = ''
+            }
+        }
+    </script>
+</div>
+</body>
+</html>
