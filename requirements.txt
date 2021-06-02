@@ -62,7 +62,7 @@ twine==3.1.1
 Twisted==20.3.0
 txaio==20.4.1
 typing==3.7.4.1
-urllib3==1.25.9
+urllib3==1.26.5
 ushlex==0.99.1
 webencodings==0.5.1
 websocket-client==0.57.0
